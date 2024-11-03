@@ -1,0 +1,251 @@
+CREATE TABLE airlines (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  flight_code VARCHAR(10) NOT NULL,
+  flight_name VARCHAR(100) NOT NULL,
+  UNIQUE (flight_code),
+  UNIQUE (flight_name)
+);
+
+CREATE TABLE available (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  flight_code VARCHAR(10) NOT NULL,
+  flight_name VARCHAR(100) NOT NULL,
+  flight_model VARCHAR(100) NOT NULL,
+  date DATE NOT NULL,
+  time TIME NOT NULL,
+  from_location VARCHAR(50) NOT NULL,
+  to_location VARCHAR(50) NOT NULL,
+  price DECIMAL(10, 2) NOT NULL,
+  FOREIGN KEY (flight_code) REFERENCES airlines(flight_code),
+  FOREIGN KEY (flight_name) REFERENCES airlines(flight_name)
+);
+
+ALTER TABLE available
+ADD CONSTRAINT fk_available_from_location
+FOREIGN KEY (from_location)
+REFERENCES destination(City);
+
+ALTER TABLE available
+ADD CONSTRAINT fk_available_to_location
+FOREIGN KEY (to_location)
+REFERENCES destination(City);
+
+CREATE TABLE destination (
+  ID INT PRIMARY KEY AUTO_INCREMENT,
+  City VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE schedule (
+  ID INT PRIMARY KEY AUTO_INCREMENT,
+  Time TIME NOT NULL,
+  Date DATE NOT NULL
+);
+
+INSERT INTO airlines (flight_code, flight) VALUES
+('GA', 'Garuda Indonesia'),
+('JT', 'Lion Air'),
+('AK', 'AirAsia'),
+('QG', 'Citilink'),
+('ID', 'Batik Air'),
+('SJ', 'Sriwijaya Air'),
+('IW', 'Wings Air'),
+('IN', 'Nam Air'),
+('XN', 'Xpress Air'),
+('KD', 'Kalstar Aviation');
+
+INSERT INTO available (flight_code, flight_name, flight_model, date, time, from_location, to_location, price)
+SELECT
+  airlines.flight_code,
+  airlines.flight_name,
+  plane.flight_model,
+  dates.date,
+  times.time,
+  from_locations.from_location,
+  to_locations.to_location,
+  ROUND(RAND() * 1000 + 100, 2) -- Random price between 100 and 1100
+FROM
+  airlines,
+  plane,
+  (SELECT 'Jakarta (JKTA)' AS from_location UNION SELECT 'Tokyo (TYOA)' UNION SELECT 'Denpasar (DPS)' UNION SELECT 'Medan (KNO)') AS from_locations,
+  (SELECT 'Jakarta (JKTA)' AS to_location UNION SELECT 'Tokyo (TYOA)' UNION SELECT 'Denpasar (DPS)' UNION SELECT 'Medan (KNO)') AS to_locations,
+  (SELECT '2023-06-01' AS date UNION SELECT '2023-06-02' UNION SELECT '2023-06-03' UNION SELECT '2023-06-04' UNION SELECT '2023-06-05' UNION SELECT '2023-06-06') AS dates,
+  (SELECT '08:00:00' AS time UNION SELECT '12:00:00' UNION SELECT '16:00:00' UNION SELECT '20:00:00') AS times
+WHERE NOT EXISTS (
+  SELECT 1
+  FROM available
+  WHERE available.flight_code = airlines.flight_code
+    AND available.flight_name = airlines.flight_name
+    AND available.flight_model = plane.flight_model
+    AND available.date = dates.date
+    AND available.time = times.time
+    AND available.from_location = from_locations.from_location
+    AND available.to_location = to_locations.to_location
+)
+ORDER BY RAND();
+
+CREATE TABLE unpaid (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  username VARCHAR(255) NOT NULL,
+  flight_code VARCHAR(10) NOT NULL,
+  flight_name VARCHAR(100) NOT NULL,
+  flight_model VARCHAR(100) NOT NULL,
+  date DATE NOT NULL,
+  time TIME NOT NULL,
+  from_location VARCHAR(50) NOT NULL,
+  to_location VARCHAR(50) NOT NULL,
+  price DECIMAL(10, 2) NOT NULL,
+  status VARCHAR(255) NOT NULL,
+  passenger_name VARCHAR(100) NOT NULL,
+  passanger_email VARCHAR(255) NOT NULL,
+  passanger_phone VARCHAR(20) NOT NULL,
+  FOREIGN KEY (flight_code) REFERENCES airlines(flight_code),
+  FOREIGN KEY (flight_name) REFERENCES airlines(flight_name)
+);
+
+
+ALTER TABLE unpaid
+ADD CONSTRAINT fk_unpaid_from_location
+FOREIGN KEY (from_location)
+REFERENCES destination(City);
+
+ALTER TABLE unpaid
+ADD CONSTRAINT fk_unpaid_to_location
+FOREIGN KEY (to_location)
+REFERENCES destination(City);
+
+ALTER TABLE unpaid
+ADD CONSTRAINT fk_unpaid_flight
+FOREIGN KEY (flight_model)
+REFERENCES plane(flight_model);
+
+ALTER TABLE unpaid
+ADD CONSTRAINT fk_unpaid_username
+FOREIGN KEY (username)
+REFERENCES register(username);
+
+ALTER TABLE unpaid
+ADD CONSTRAINT fk_unpaid_status
+FOREIGN KEY (status)
+REFERENCES status(status);
+
+CREATE TABLE paid (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  username VARCHAR(255) NOT NULL,
+  flight_code VARCHAR(10) NOT NULL,
+  flight_name VARCHAR(100) NOT NULL,
+  flight_model VARCHAR(100) NOT NULL,
+  date DATE NOT NULL,
+  time TIME NOT NULL,
+  from_location VARCHAR(50) NOT NULL,
+  to_location VARCHAR(50) NOT NULL,
+  passenger_name VARCHAR(100) NOT NULL,
+  passanger_email VARCHAR(255) NOT NULL,
+  passanger_phone VARCHAR(20) NOT NULL,
+  price DECIMAL(10, 2) NOT NULL,
+  status VARCHAR(255) NOT NULL,
+  FOREIGN KEY (flight_code) REFERENCES airlines(flight_code),
+  FOREIGN KEY (flight_name) REFERENCES airlines(flight_name)
+);
+
+ALTER TABLE paid
+ADD CONSTRAINT fk_paid_from_location
+FOREIGN KEY (from_location)
+REFERENCES destination(City);
+
+ALTER TABLE paid
+ADD CONSTRAINT fk_paid_to_location
+FOREIGN KEY (to_location)
+REFERENCES destination(City);
+
+ALTER TABLE paid
+ADD CONSTRAINT fk_paid_flight_model
+FOREIGN KEY (flight_model)
+REFERENCES plane(flight_model);
+
+ALTER TABLE paid
+ADD CONSTRAINT fk_paid_username
+FOREIGN KEY (username)
+REFERENCES register(username);
+
+ALTER TABLE paid
+ADD CONSTRAINT fk_paid_status
+FOREIGN KEY (status)
+REFERENCES status(status);
+
+
+CREATE TABLE register (
+  email VARCHAR(255) PRIMARY KEY,
+  full_name VARCHAR(255) NOT NULL,
+  username VARCHAR(255) UNIQUE NOT NULL,
+  password VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE pilot (
+id INT AUTO_INCREMENT PRIMARY KEY,
+pilot_name VARCHAR(100) NOT NULL
+);
+
+
+CREATE TABLE plane (
+id INT AUTO_INCREMENT PRIMARY KEY,
+flight_model VARCHAR(100) NOT NULL
+);
+
+INSERT INTO Destination (City) VALUES
+('Jakarta (JKTA)),
+('Tokyo (TYOA)),
+('Denpasar (DPS)),
+('Medan (KNO));
+
+INSERT INTO Plane (Flight_Model) VALUES
+('Boeing 737'),
+('Airbus A320'),
+('ATR 72'),
+('Boeing 777'),
+('Airbus A330'),
+('Embraer E190'),
+('Boeing 747'),
+('Airbus A350'),
+('Bombardier CRJ900');
+
+INSERT INTO schedule (date, time)
+VALUES
+  ('2023-06-01', '08:00:00'),
+  ('2023-06-01', '12:00:00'),
+  ('2023-06-01', '16:00:00'),
+  ('2023-06-01', '20:00:00'),
+  ('2023-06-02', '08:00:00'),
+  ('2023-06-02', '12:00:00'),
+  ('2023-06-02', '16:00:00'),
+  ('2023-06-02', '20:00:00'),
+  ('2023-06-03', '08:00:00'),
+  ('2023-06-03', '12:00:00'),
+  ('2023-06-03', '16:00:00'),
+  ('2023-06-03', '20:00:00'),
+  ('2023-06-04', '08:00:00'),
+  ('2023-06-04', '12:00:00'),
+  ('2023-06-04', '16:00:00'),
+  ('2023-06-04', '20:00:00'),
+  ('2023-06-05', '08:00:00'),
+  ('2023-06-05', '12:00:00'),
+  ('2023-06-05', '16:00:00'),
+  ('2023-06-05', '20:00:00'),
+  ('2023-06-06', '08:00:00'),
+  ('2023-06-06', '12:00:00'),
+  ('2023-06-06', '16:00:00'),
+  ('2023-06-06', '20:00:00');
+
+CREATE TABLE payment_method (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  method_name VARCHAR(100) NOT NULL,
+  description VARCHAR(255),
+  is_active BOOLEAN DEFAULT true
+);
+
+INSERT INTO payment_method (method_name, description) VALUES
+  ('Credit Card', 'Pay with your credit card.'),
+  ('Debit Card', 'Pay with your debit card.'),
+  ('PayPal', 'Pay using your PayPal account.'),
+  ('Bank Transfer', 'Transfer funds from your bank account.');
+
+
